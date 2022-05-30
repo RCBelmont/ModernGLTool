@@ -129,13 +129,10 @@ def create_compute_shader(context: mgl.Context, shader_file: str):
 
 def create_texture_base(context: mgl.Context, size, t_format=fd.RGBA32, data=None):
     dtype, cn = format_to_mdgl(t_format)
-    ##TODO:DELETE
-    print(dtype)
-
     return context.texture(size, cn, dtype=dtype, data=data)
 
 
-def create_texture_with_img(context: mgl.Context, img_path: str):
+def create_texture_with_img(context: mgl.Context, img_path: str) -> mgl.Texture:
     img = read_img(img_path)
     size_x, size_y, cn = img.shape
     i_format = get_img_format(img)
@@ -144,7 +141,8 @@ def create_texture_with_img(context: mgl.Context, img_path: str):
     return tex
 
 
-def create_texture_with_color(context: mgl.Context, width: int, height: int, init_color: tuple = (0, 0, 0, 1)):
+def create_texture_with_color(context: mgl.Context, width: int, height: int,
+                              init_color: tuple = (0, 0, 0, 1)) -> mgl.Texture:
     a = numpy.zeros((width, height, 4), dtype="float32")
     ic_len = len(init_color)
     if ic_len > 0:

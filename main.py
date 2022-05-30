@@ -9,7 +9,14 @@ def main():
     shader_path = './Shader/Test.glsl'
 
     context = create_contex_standalone()
-    # cs = create_compute_shader(context, shader_path)
+    cs = create_compute_shader(context, shader_path)
+    texSource = create_texture_with_img(context, "./TestImage/Test.png")
+    texDist = create_texture_with_color(context, width=512, height=128)
+    texDist.bind_to_image(0, read=True, write=True)
+    texDist.filter = mgl.NEAREST, mgl.NEAREST
+
+    cs.run(int(texDist.size[0] / 16) + 1, int(texDist.size[1] / 16) + 1, 1)
+    save_img("./OutPut/DD.png", texture_to_img(texDist))
     ##screate_texture(context, img_path)
     # f = open("./Shader/Test.glsl")
     # shaderCode = f.read()
@@ -24,15 +31,6 @@ def main():
     # Image.open("")
     # texSource = ctx.texture()
     # cs.run(int(256 / 16), int(256 / 16))
-
-    tex = create_texture_with_color(context, 64, 64, (1, 1, 0, 1))
-    tex = create_texture_with_img(context, './TestImage/Test.hdr')
-    img = texture_to_img(tex)
-    save_img('./OutPut/DD.jpg', img)
-
-    # aaa = numpy.frombuffer(tex.read(), dtype='float32')
-    # ##TODO:DELETE
-    # print(aaa)
 
 
 if __name__ == '__main__':

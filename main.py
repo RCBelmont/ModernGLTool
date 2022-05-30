@@ -1,7 +1,6 @@
 import os
-from PIL import Image
 import moderngl as mgl
-
+import numpy
 
 from Utils.graphic_utils import *
 
@@ -10,10 +9,8 @@ def main():
     shader_path = './Shader/Test.glsl'
 
     context = create_contex_standalone()
-    #cs = create_compute_shader(context, shader_path)
-    img_path = "D:\\PC\\Pictures\\belfast_sunset_1k.hdr"
-    img_path = "D:\\PC\\Pictures\\Test.jpg"
-    create_texture(context, img_path)
+    # cs = create_compute_shader(context, shader_path)
+    ##screate_texture(context, img_path)
     # f = open("./Shader/Test.glsl")
     # shaderCode = f.read()
     #
@@ -28,6 +25,14 @@ def main():
     # texSource = ctx.texture()
     # cs.run(int(256 / 16), int(256 / 16))
 
+    tex = create_texture_with_color(context, 64, 64, (1, 1, 0, 1))
+    tex = create_texture_with_img(context, './TestImage/Test.hdr')
+    img = texture_to_img(tex)
+    save_img('./OutPut/DD.jpg', img)
+
+    # aaa = numpy.frombuffer(tex.read(), dtype='float32')
+    # ##TODO:DELETE
+    # print(aaa)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+import math
 import os
 import moderngl as mgl
 import numpy
@@ -10,13 +11,27 @@ def main():
 
     context = create_contex_standalone()
     cs = create_compute_shader(context, shader_path)
-    texSource = create_texture_with_img(context, "./TestImage/Test.png")
-    texDist = create_texture_with_color(context, width=512, height=128)
-    texDist.bind_to_image(0, read=True, write=True)
-    texDist.filter = mgl.NEAREST, mgl.NEAREST
+    texSource = create_texture_with_img(context, "./TestImage/ff.jpg")
 
-    cs.run(int(texDist.size[0] / 16) + 1, int(texDist.size[1] / 16) + 1, 1)
-    save_img("./OutPut/DD.png", texture_to_img(texDist))
+    texSource.bind_to_image(0)
+    ##TODO:DELETE
+    print(texSource.dtype)
+    
+    texDist = create_texture_with_color(context, texSource.size[0], texSource.size[1], init_color=(1,0,0,1))
+    texDist.bind_to_image(1)
+    cs.run(math.ceil(texSource.size[0] / 16), math.ceil(texSource.size[1] / 16), 1)
+    img = texture_to_img(texDist)
+    save_img("./OutPut/AFAF.png", img)
+    img = texture_to_img(texSource)
+    save_img("./OutPut/AFA1F.png", img)
+
+    
+    # texDist = create_texture_with_color(context, width=512, height=128, init_color=(1, 0, 0, 1))
+    # texDist.bind_to_image(0, read=True, write=True)
+    # texDist.filter = mgl.NEAREST, mgl.NEAREST
+
+    #cs.run(math.ceil(texDist.size[0] / 1), math.ceil(texDist.size[1] / 1), 1)
+    
     ##screate_texture(context, img_path)
     # f = open("./Shader/Test.glsl")
     # shaderCode = f.read()

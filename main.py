@@ -11,19 +11,17 @@ def main():
 
     context = create_contex_standalone()
     cs = create_compute_shader(context, shader_path)
-    texSource = create_texture_with_img(context, "./TestImage/ff.jpg")
-
+    texSource = create_texture_with_img(context, "./TestImage/Test.exr")
     texSource.bind_to_image(0)
-    ##TODO:DELETE
-    print(texSource.dtype)
-    
     texDist = create_texture_with_color(context, texSource.size[0], texSource.size[1], init_color=(1,0,0,1))
     texDist.bind_to_image(1)
     cs.run(math.ceil(texSource.size[0] / 16), math.ceil(texSource.size[1] / 16), 1)
     img = texture_to_img(texDist)
     save_img("./OutPut/AFAF.png", img)
-    img = texture_to_img(texSource)
-    save_img("./OutPut/AFA1F.png", img)
+    cs.release()
+    texDist.release()
+    texSource.release()
+    context.release()
 
     
     # texDist = create_texture_with_color(context, width=512, height=128, init_color=(1, 0, 0, 1))
@@ -50,3 +48,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

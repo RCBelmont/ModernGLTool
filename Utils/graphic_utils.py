@@ -132,15 +132,27 @@ def create_texture_base(context: mgl.Context, size, t_format=fd.RGBA32, data=Non
     return context.texture(size, cn, dtype=dtype, data=data)
 
 
-def create_texture_with_img(context: mgl.Context, img_path: str) -> mgl.Texture:
+def create_texture_with_img(context: mgl.Context, img_path: str, RGBA32f = True) -> mgl.Texture:
+    '''
+    根据图片文件生成一个Texture对象
+    :param context:
+    :param img_path:
+    :return:
+    '''
     img = read_img(img_path)
     size_x, size_y, cn = img.shape
-    img = to_float32(img)
-    if cn == 3:
-        img = numpy.insert(img, 3, 1, axis=2)
-    ##TODO:DELETE
-    print(img)
-    
+    if RGBA32f:
+        if img.dtype != 'float32':
+            img = to_float32(img)
+        if cn == 3:
+            img = numpy.insert(img, 3, 1, axis=2)
+        elif cn == 2:
+            img = numpy.insert(img, 2, 0, axis=2)
+            img = numpy.insert(img, 3, 1, axis=2)
+        elif cn == 1:
+            img = numpy.insert(img, 1, 0, axis=2)
+            img = numpy.insert(img, 2, 0, axis=2)
+            img = numpy.insert(img, 3, 1, axis=2)
     i_format = get_img_format(img)
     assert (i_format != fd.Unknown)
     tex = create_texture_base(context, (size_y, size_x), i_format, img.tobytes())
@@ -149,6 +161,14 @@ def create_texture_with_img(context: mgl.Context, img_path: str) -> mgl.Texture:
 
 def create_texture_with_color(context: mgl.Context, width: int, height: int,
                               init_color: tuple = (0, 0, 0, 1)) -> mgl.Texture:
+    '''
+    生成一个固定颜色的Texture对象，强制RGBA32
+    :param context:
+    :param width:
+    :param height:
+    :param init_color:
+    :return:
+    '''
     a = numpy.zeros((width, height, 4), dtype="float32")
     ic_len = len(init_color)
     if ic_len > 0:

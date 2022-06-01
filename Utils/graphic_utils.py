@@ -127,12 +127,29 @@ def create_compute_shader(context: mgl.Context, shader_file: str):
         raise Exception('Shader 不存在或路径错误：' + str(shader_path))
 
 
+def any_to_rgba32(img: numpy.ndarray) -> numpy.ndarray:
+    size_x, size_y, cn = img.shape
+    r_img = img.copy()
+    if r_img.dtype != 'float32':
+        r_img = to_float32(r_img)
+    if cn == 3:
+        r_img = numpy.insert(r_img, 3, 1, axis=2)
+    elif cn == 2:
+        r_img = numpy.insert(r_img, 2, 0, axis=2)
+        r_img = numpy.insert(r_img, 3, 1, axis=2)
+    elif cn == 1:
+        r_img = numpy.insert(r_img, 1, 0, axis=2)
+        r_img = numpy.insert(r_img, 2, 0, axis=2)
+        r_img = numpy.insert(r_img, 3, 1, axis=2)
+    return r_img
+
+
 def create_texture_base(context: mgl.Context, size, t_format=fd.RGBA32, data=None):
     dtype, cn = format_to_mdgl(t_format)
     return context.texture(size, cn, dtype=dtype, data=data)
 
 
-def create_texture_with_img(context: mgl.Context, img_path: str, RGBA32f = True) -> mgl.Texture:
+def create_texture_with_img(context: mgl.Context, img_path: str, RGBA32f=True) -> mgl.Texture:
     '''
     根据图片文件生成一个Texture对象
     :param context:
@@ -142,17 +159,7 @@ def create_texture_with_img(context: mgl.Context, img_path: str, RGBA32f = True)
     img = read_img(img_path)
     size_x, size_y, cn = img.shape
     if RGBA32f:
-        if img.dtype != 'float32':
-            img = to_float32(img)
-        if cn == 3:
-            img = numpy.insert(img, 3, 1, axis=2)
-        elif cn == 2:
-            img = numpy.insert(img, 2, 0, axis=2)
-            img = numpy.insert(img, 3, 1, axis=2)
-        elif cn == 1:
-            img = numpy.insert(img, 1, 0, axis=2)
-            img = numpy.insert(img, 2, 0, axis=2)
-            img = numpy.insert(img, 3, 1, axis=2)
+        img = any_to_rgba32(img)
     i_format = get_img_format(img)
     assert (i_format != fd.Unknown)
     tex = create_texture_base(context, (size_y, size_x), i_format, img.tobytes())
@@ -160,7 +167,7 @@ def create_texture_with_img(context: mgl.Context, img_path: str, RGBA32f = True)
 
 
 def create_texture_with_color(context: mgl.Context, width: int, height: int,
-                              init_color: tuple = (0, 0, 0, 1)) -> mgl.Texture:
+                              color: tuple = (0, 0, 0, 1)) -> mgl.Texture:
     '''
     生成一个固定颜色的Texture对象，强制RGBA32
     :param context:
@@ -170,18 +177,18 @@ def create_texture_with_color(context: mgl.Context, width: int, height: int,
     :return:
     '''
     a = numpy.zeros((width, height, 4), dtype="float32")
-    ic_len = len(init_color)
+    ic_len = len(color)
     if ic_len > 0:
-        a[:, :, 0] = init_color[0]
+        a[:, :, 0] = color[0]
 
     if ic_len > 1:
-        a[:, :, 1] = init_color[1]
+        a[:, :, 1] = color[1]
 
     if ic_len > 2:
-        a[:, :, 2] = init_color[2]
+        a[:, :, 2] = color[2]
 
     if ic_len > 3:
-        a[:, :, 3] = init_color[3]
+        a[:, :, 3] = color[3]
 
     return create_texture_base(context, (width, height), fd.RGBA32, a.tobytes())
 
@@ -190,3 +197,76 @@ def texture_to_img(tex: mgl.Texture):
     data_array = numpy.frombuffer(tex.read(), dtype=mdgl_type_to_numpy(tex.dtype))
     data_array = data_array.copy()
     return data_array.reshape((tex.size[1], tex.size[0], tex.components))
+
+def texture_cube_to_img(tex: mgl.TextureCube, face:int):
+    data_array = numpy.frombuffer(tex.read(face), dtype=mdgl_type_to_numpy(tex.dtype))
+    data_array = data_array.copy()
+    return data_array.reshape((tex.size[1], tex.size[0], tex.components))
+
+
+# region TextureCube
+# 0: Positive X
+# 1: Negative X
+# 2: Positive Y
+# 3: Negative Y
+# 4: Positive Z
+# 5: Negative Z
+def create_texture_cube_with_color(context: mgl.Context, size=64, color=(0, 0, 0, 1)):
+    '''
+    Create Cube Texture With Given Color
+    :param context:
+    :return:
+    '''
+
+    tex = context.texture_cube((size, size), 4, dtype='f4')
+    color_array = numpy.zeros((size, size, 4), dtype='float32')
+    ic_len = len(color)
+    if ic_len > 0:
+        color_array[:, :, 0] = color[0]
+
+    if ic_len > 1:
+        color_array[:, :, 1] = color[1]
+
+    if ic_len > 2:
+        color_array[:, :, 2] = color[2]
+
+    if ic_len > 3:
+        color_array[:, :, 3] = color[3]
+    bytes_data = color_array.tobytes()
+    for i in range(0, 6):
+        tex.write(i, data=bytes_data)
+    return tex
+
+
+def create_texture_cube_with_img(context: mgl.Context, files: list):
+    f_len = len(files)
+    if f_len <= 0:
+        raise Exception("Need Unless 1 Image File")
+    first_img = read_img(files[0])
+    h, w, cn = first_img.shape
+    if h != w:
+        raise Exception("Source Image Must Be Square w = h")
+    size = h
+    image_bytes_list = []
+    first_img = any_to_rgba32(first_img)
+    image_bytes_list.append(first_img.tobytes())
+    for i in range(1, f_len):
+        img = read_img(files[i])
+        h, w, cn = img.shape
+        if h != w:
+            raise Exception("Source Image Must Be Square w = h")
+        if h != size:
+            raise Exception("Each Image Must Have Same Size")
+
+        byte_data = any_to_rgba32(img).tobytes()
+        image_bytes_list.append(byte_data)
+
+    tex_cube = context.texture_cube((size, size), 4, dtype='f4')
+
+    for i in range(0, 6):
+        idx = i
+        if idx > f_len - 1:
+            idx = f_len - 1
+        tex_cube.write(i, image_bytes_list[i])
+    return tex_cube
+# endregion

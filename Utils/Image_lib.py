@@ -5,13 +5,20 @@ import numpy as np
 os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '1'
 import numpy
 import matplotlib.image as mping
+import matplotlib.pyplot as plt
 import cv2
 import Utils.format_define as fd
 
 
+def show_img(imgs: list):
+    i = 0
+    for img in imgs:
+        plt.figure(i)
+        plt.imshow(img)
+        i += 1
+    plt.show()
 
-
-def read_img(file_path: str) -> numpy.array:
+def read_img(file_path: str) -> numpy.ndarray:
     print("OpenImageAt: " + file_path)
     if os.path.exists(file_path) and os.path.isfile(file_path):
         if file_path.endswith('.hdr') or file_path.endswith('.exr'):
@@ -27,7 +34,7 @@ def read_img(file_path: str) -> numpy.array:
         raise Exception("图片文件路径错误" + file_path)
 
 
-def save_img(file_path: str, img: numpy.array):
+def save_img(file_path: str, img: numpy.ndarray):
     if file_path.endswith('.hdr'):
         img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
         cv2.imwrite(file_path, img)

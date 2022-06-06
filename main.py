@@ -45,7 +45,7 @@ def main():
     # cs.release()
     # texDist.release()
     # texSource.release()
-    func.renderdoc_grid_to_texture_cube(context, './TestImage/gg.exr')
+    func.renderdoc_grid_to_panorama('./TestImage/gg.exr', './OutPut/reflect.hdr')
 
     context.release()
 

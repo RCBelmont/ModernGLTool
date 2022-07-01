@@ -45,13 +45,21 @@ def main():
     # cs.release()
     # texDist.release()
     # texSource.release()
-    func.renderdoc_grid_to_panorama('./TestImage/gg.exr', './OutPut/reflect.hdr')
+    # func.renderdoc_grid_to_panorama('./TestImage/gg.exr', './OutPut/reflect.hdr')
+
+    context = create_contex_standalone()
+    shader_path = os.getcwd() + "\\Shader\\Test.glsl"
+    cs = create_compute_shader(context, shader_path)
+    tex_out = create_texture_with_color(context, 1024, 1024)
+    tex_out.bind_to_image(1)
+    cs.run(math.ceil(tex_out.size[0] / 16), math.ceil(tex_out.size[1] / 16), 1)
+    img = texture_to_img(tex_out)
+    show_img([img])
+    save_img("./OutPut/Sphare123.exr", img)
+    cs.release()
+    tex_out.release()
 
     context.release()
-
-
-
-
 
 
 # texDist = create_texture_with_color(context, width=512, height=128, init_color=(1, 0, 0, 1))

@@ -6,16 +6,27 @@
 
 
 
+  // void main()
+  // {
+  //   ivec2 texelPos = ivec2(gl_GlobalInvocationID.xy);
+  //   ivec2 size = imageSize(destTex);
+  //   vec4 color = imageLoad(destTex, texelPos);
+  //   //imageStore(destTex, texelPos, color);
+  //   float gray = dot(color.rgb,vec3(0.0, 0.59, 0.0));
+  //   vec2 uv = vec2(texelPos.x*1.0 / size.x, texelPos.y*1.0 / size.y);
+  //   vec4 c = texture(texture0, uv);
+  //   imageStore(destTex, texelPos, vec4(c.rgb,1));
+  //   //imageStore(destTex, texelPos, vec4(size, 0, 1));
+  //   //imageStore(destTex, texelPos, vec4(texelPos.x*1.0 / size.x, texelPos.y*1.0 / size.y, 0, 1));
+  // }
+
   void main()
   {
     ivec2 texelPos = ivec2(gl_GlobalInvocationID.xy);
     ivec2 size = imageSize(destTex);
-    vec4 color = imageLoad(destTex, texelPos);
-    //imageStore(destTex, texelPos, color);
-    float gray = dot(color.rgb,vec3(0.0, 0.59, 0.0));
     vec2 uv = vec2(texelPos.x*1.0 / size.x, texelPos.y*1.0 / size.y);
-    vec4 c = texture(texture0, uv);
-    imageStore(destTex, texelPos, vec4(c.rgb,1));
-    //imageStore(destTex, texelPos, vec4(size, 0, 1));
-    //imageStore(destTex, texelPos, vec4(texelPos.x*1.0 / size.x, texelPos.y*1.0 / size.y, 0, 1));
+    vec2 cood = (uv - 0.5) * 2;
+    float l = length(cood) * length(cood);
+    float v = sqrt(0.8 - l*l);
+    imageStore(destTex, texelPos, vec4(v,v,v,v));
   }

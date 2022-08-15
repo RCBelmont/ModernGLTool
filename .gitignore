@@ -1,3 +1,4 @@
 ﻿.idea
 OutPut
 Utils/__pycache__
+*.pyc

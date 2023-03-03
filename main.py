@@ -1,9 +1,6 @@
 import math
-import os
-import pathlib
 
 from Utils.graphic_utils import *
-import Function as func
 
 
 def main():
@@ -11,6 +8,26 @@ def main():
 
     context = create_contex_standalone()
     cs = create_compute_shader(context, shader_path)
+    for root, d, f_list in os.walk(r'G:\RND\AI\DataSet\FF_Style_Fix'):
+        for f in f_list:
+            img_in = create_texture_with_img(context, os.path.join(root, f))
+            shader_path = os.getcwd() + "\\Shader\\Test.glsl"
+            cs = create_compute_shader(context, shader_path)
+            img_in.use(0)
+            sampSource = context.sampler()
+            sampSource.use(location=0)
+            tex_out = create_texture_with_color(context, width=512, height=512)
+            tex_out.bind_to_image(1)
+            cs.run(math.ceil(tex_out.size[0] / 16), math.ceil(tex_out.size[1] / 16), 1)
+            img = texture_to_img(tex_out)
+            save_img(r'G:\RND\AI\DataSet\FF_Style_xx\\' + f, img)
+            ##TODO:DELETE
+            print("save：" + f)
+            tex_out.release()
+            img_in.release()
+    cs.release()
+    context.release()
+
     # cs['texture0'] = 0
     # texSource = create_texture_cube_with_img(context, [
     #     "./TestImage/Cube/PX.exr",
@@ -47,19 +64,21 @@ def main():
     # texSource.release()
     # func.renderdoc_grid_to_panorama('./TestImage/gg.exr', './OutPut/reflect.hdr')
 
-    context = create_contex_standalone()
-    shader_path = os.getcwd() + "\\Shader\\Test.glsl"
-    cs = create_compute_shader(context, shader_path)
-    tex_out = create_texture_with_color(context, 1024, 1024)
-    tex_out.bind_to_image(1)
-    cs.run(math.ceil(tex_out.size[0] / 16), math.ceil(tex_out.size[1] / 16), 1)
-    img = texture_to_img(tex_out)
-    show_img([img])
-    save_img("./OutPut/Sphare123.exr", img)
-    cs.release()
-    tex_out.release()
+    # context = create_contex_standalone()
+    # shader_path = os.getcwd() + "\\Shader\\Test.glsl"
+    # cs = create_compute_shader(context, shader_path)
+    # tex_out = create_texture_with_color(context, 1024, 1024)
+    # tex_out.bind_to_image(1)
+    # cs.run(math.ceil(tex_out.size[0] / 16), math.ceil(tex_out.size[1] / 16), 1)
+    # img = texture_to_img(tex_out)
+    # show_img([img])
+    # save_img("./OutPut/Sphare123.exr", img)
+    # cs.release()
+    # tex_out.release()
+    #
+    # context.release()
 
-    context.release()
+    ##func.gen_blender_film_data()
 
 
 # texDist = create_texture_with_color(context, width=512, height=128, init_color=(1, 0, 0, 1))

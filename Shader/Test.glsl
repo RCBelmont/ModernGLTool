@@ -26,7 +26,10 @@
     ivec2 size = imageSize(destTex);
     vec2 uv = vec2(texelPos.x*1.0 / size.x, texelPos.y*1.0 / size.y);
     vec2 cood = (uv - 0.5) * 2;
+    vec4 color = texture(texture0, uv);
     float l = length(cood) * length(cood);
     float v = sqrt(0.8 - l*l);
-    imageStore(destTex, texelPos, vec4(v,v,v,v));
+    float b_alpha = 1-color.a;
+    vec4 out_color = vec4(color.r*color.a + b_alpha, color.g*color.a + b_alpha, color.b*color.a + b_alpha, 1);
+    imageStore(destTex, texelPos, out_color);
   }
